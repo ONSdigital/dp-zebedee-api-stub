@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 	"strings"
+
+	"github.com/ONSdigital/log.go/log"
 )
 
 const (
@@ -11,37 +13,35 @@ const (
 	serviceToken  = "Authorization"
 )
 
-var (
-	identities = map[string]string{
-		"7e0d1238-cf25-4239-adfb-7f1a460a0580": "Weyland-Yutani Corporation",
-	}
-)
-
-type Identity struct {
+type Model struct {
 	ID         string `json:"id"`
 	Identifier string `json:"identifier"`
 }
 
-func GetHandler(w http.ResponseWriter, r *http.Request) {
-	id := r.Header.Get(florenceToken)
-	if id == "" {
-		id = strings.TrimPrefix(r.Header.Get(serviceToken), "Bearer ")
-	}
+func GetIdentityHandler(identities map[string]Model) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		log.Event(r.Context(), "handling get identity request", log.INFO)
 
-	i, exists := identities[id]
-	if !exists {
-		writeErrorResponse(w, http.StatusUnauthorized, "unknown identity")
-		return
-	}
+		id := r.Header.Get(florenceToken)
+		if id == "" {
+			id = strings.TrimPrefix(r.Header.Get(serviceToken), "Bearer ")
+		}
 
-	b, err := json.Marshal(i)
-	if err != nil {
-		writeErrorResponse(w, http.StatusInternalServerError, "internal server error")
-		return
-	}
+		i, exists := identities[id]
+		if !exists {
+			writeErrorResponse(w, http.StatusUnauthorized, "unknown identity")
+			return
+		}
 
-	w.Header().Add("content-type", "application/json")
-	w.Write(b)
+		b, err := json.Marshal(i)
+		if err != nil {
+			writeErrorResponse(w, http.StatusInternalServerError, "internal server error")
+			return
+		}
+
+		w.Header().Add("content-type", "application/json")
+		w.Write(b)
+	}
 }
 
 func writeErrorResponse(w http.ResponseWriter, status int, message string) {

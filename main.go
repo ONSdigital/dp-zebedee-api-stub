@@ -6,6 +6,7 @@ import (
 	"os"
 
 	dphttp "github.com/ONSdigital/dp-net/http"
+	"github.com/ONSdigital/dp-zebedee-api-stub/config"
 	"github.com/ONSdigital/dp-zebedee-api-stub/health"
 	"github.com/ONSdigital/dp-zebedee-api-stub/identity"
 	"github.com/ONSdigital/log.go/log"
@@ -22,11 +23,17 @@ func main() {
 func run() error {
 	log.Namespace = "dp-zebedee-api-stub"
 
+	cfg, err := config.Get()
+	if err != nil {
+		return err
+	}
+
 	r := mux.NewRouter()
-	r.HandleFunc("/identity", identity.GetHandler).Methods(http.MethodGet)
+	r.HandleFunc("/identity", identity.GetIdentityHandler(cfg.Identities)).Methods(http.MethodGet)
 	r.HandleFunc("/health", health.CheckHandler).Methods(http.MethodGet)
 
-	if err := dphttp.NewServer(":8082", r).ListenAndServe(); err != nil {
+	log.Event(context.Background(), "starting stub", log.INFO)
+	if err := dphttp.NewServer(cfg.BindAddr, r).ListenAndServe(); err != nil {
 		return err
 	}
 
