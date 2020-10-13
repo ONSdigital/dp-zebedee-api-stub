@@ -1,0 +1,14 @@
+FROM golang:1.15
+
+ARG BIND_ADDR
+
+# Create app directory
+WORKDIR /app
+
+ENV HUMAN_LOG 1
+ENV BIND_ADDR :${BIND_ADDR}
+
+COPY api-stub-linux /app/
+COPY identity_data.json /app/
+
+CMD ./api-stub-linux

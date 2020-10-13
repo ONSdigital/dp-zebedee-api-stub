@@ -26,7 +26,7 @@ func Get() (*Configuration, error) {
 		Identities: make(map[string]*handlers.Identity, 0),
 	}
 
-	b, err := ioutil.ReadFile("handlers/identity_data.json")
+	b, err := ioutil.ReadFile("identity_data.json")
 	if err != nil {
 		return nil, err
 	}

@@ -27,6 +27,10 @@ func run() error {
 		return err
 	}
 
+	log.Event(context.Background(), "config", log.INFO, log.Data{
+		"config": cfg,
+	})
+
 	r := mux.NewRouter()
 	r.HandleFunc("/health", handlers.HealthCheck).Methods(http.MethodGet)
 	r.HandleFunc("/identity", handlers.GetIdentity(cfg.Identities)).Methods(http.MethodGet)
